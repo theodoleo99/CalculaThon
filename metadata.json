@@ -1,0 +1,6 @@
+{
+  "name": "Calculadora Python & Guia Interativo",
+  "description": "Calculadora amigável com quatro operações básicas (adição, subtração, multiplicação e divisão), código Python completo comentado, explicações didáticas detalhadas de cada parte e terminal interativo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
