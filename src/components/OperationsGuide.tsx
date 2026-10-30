@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { OPERATIONS_LIST, OperationDetail } from "../data/pythonCalculatorCode";
-import { Plus, Minus, X as MultiplyIcon, Divide as DivideIcon, Sparkles, BookMarked, Calculator } from "lucide-react";
+import { OPERATIONS_LIST } from "../data/pythonCalculatorCode";
+import { Plus, Minus, X as MultiplyIcon, Divide as DivideIcon, Percent, Sparkles, BookMarked, Calculator } from "lucide-react";
 
 export function OperationsGuide() {
   const [selectedOpId, setSelectedOpId] = useState<string>("adicao");
@@ -22,6 +22,17 @@ export function OperationsGuide() {
           return { res: "Erro: Divisão por Zero!", formula: `${testA} / 0`, isError: true };
         }
         return { res: testA / testB, formula: `${testA} / ${testB}` };
+      case "porcentagem":
+        return { res: (testA * testB) / 100.0, formula: `${testB}% de ${testA}` };
+      case "logaritmo":
+        if (testA <= 0) {
+          return { res: "Erro: Logaritmo indefinido (logaritmando ≤ 0)!", formula: `log_${testB}(${testA})`, isError: true };
+        }
+        if (testB <= 0 || testB === 1) {
+          return { res: "Erro: A base do logaritmo deve ser > 0 e ≠ 1!", formula: `log_${testB}(${testA})`, isError: true };
+        }
+        const logRes = Math.log(testA) / Math.log(testB);
+        return { res: Number(logRes.toFixed(6)), formula: `log de ${testA} na base ${testB}` };
       default:
         return { res: 0, formula: "" };
     }
@@ -33,26 +44,38 @@ export function OperationsGuide() {
     <div className="flex flex-col gap-8">
       {/* Header do Guia */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6">
-        <div className="max-w-2xl">
+        <div className="max-w-3xl">
           <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <BookMarked className="w-5 h-5 text-amber-600" />
-            Guia Didático das 4 Operações Básicas
+            Guia Didático das Operações Matemáticas
           </h2>
           <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-            Entenda como funcionam a Adição, Subtração, Multiplicação e Divisão na matemática e na sintaxe da linguagem Python.
+            Entenda detalhadamente como funcionam a Adição, Subtração, Multiplicação, Divisão, Porcentagem e Logaritmo na teoria matemática e na prática da linguagem Python.
           </p>
         </div>
       </div>
 
-      {/* Grid de 4 Cards das Operações */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Grid de 6 Cards das Operações */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {OPERATIONS_LIST.map((op) => {
           const isSelected = selectedOp.id === op.id;
           return (
             <button
               key={op.id}
               type="button"
-              onClick={() => setSelectedOpId(op.id)}
+              onClick={() => {
+                setSelectedOpId(op.id);
+                if (op.id === "porcentagem") {
+                  setTestA(500);
+                  setTestB(20);
+                } else if (op.id === "logaritmo") {
+                  setTestA(100);
+                  setTestB(10);
+                } else {
+                  setTestA(20);
+                  setTestB(4);
+                }
+              }}
               className={`text-left p-5 rounded-2xl transition-all border cursor-pointer ${
                 isSelected
                   ? "bg-white border-amber-500 shadow-md ring-2 ring-amber-500/20"
@@ -67,6 +90,8 @@ export function OperationsGuide() {
                   {op.id === "subtracao" && <Minus className="w-5 h-5" />}
                   {op.id === "multiplicacao" && <MultiplyIcon className="w-5 h-5" />}
                   {op.id === "divisao" && <DivideIcon className="w-5 h-5" />}
+                  {op.id === "porcentagem" && <Percent className="w-4 h-4" />}
+                  {op.id === "logaritmo" && <span className="font-mono text-xs font-black">log</span>}
                 </span>
                 <span className="text-xs font-mono text-slate-400">
                   Python: <code className="font-bold text-slate-700">{op.pythonOperator}</code>
@@ -93,7 +118,7 @@ export function OperationsGuide() {
         <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 sm:p-7 space-y-6">
           <div>
             <span className="text-[11px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-              Operador em Python: {selectedOp.pythonOperator}
+              Operador / Função em Python: {selectedOp.pythonOperator}
             </span>
             <h3 className="text-xl font-bold text-slate-900 mt-2">
               Tudo sobre {selectedOp.name}
@@ -153,7 +178,11 @@ export function OperationsGuide() {
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Primeiro número (a):
+                {selectedOp.id === "porcentagem" 
+                  ? "Valor Principal / Base (a):" 
+                  : selectedOp.id === "logaritmo"
+                  ? "Número / Logaritmando (a > 0):"
+                  : "Primeiro número (a):"}
               </label>
               <input
                 type="number"
@@ -161,11 +190,20 @@ export function OperationsGuide() {
                 onChange={(e) => setTestA(Number(e.target.value))}
                 className="w-full px-3 py-2 text-sm font-mono border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
+              {selectedOp.id === "logaritmo" && testA <= 0 && (
+                <span className="text-[11px] text-rose-600 font-medium mt-1 block">
+                  Atenção: O logaritmo é indefinido para valores ≤ 0!
+                </span>
+              )}
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Segundo número (b):
+                {selectedOp.id === "porcentagem" 
+                  ? "Taxa Percentual % (b):" 
+                  : selectedOp.id === "logaritmo"
+                  ? "Base do Logaritmo (b > 0 e ≠ 1):"
+                  : "Segundo número (b):"}
               </label>
               <input
                 type="number"
@@ -176,6 +214,11 @@ export function OperationsGuide() {
               {selectedOp.id === "divisao" && testB === 0 && (
                 <span className="text-[11px] text-rose-600 font-medium mt-1 block">
                   Atenção: Divisor igual a zero! Veja como o Python lida com isso abaixo.
+                </span>
+              )}
+              {selectedOp.id === "logaritmo" && (testB <= 0 || testB === 1) && (
+                <span className="text-[11px] text-rose-600 font-medium mt-1 block">
+                  Atenção: A base do logaritmo deve ser estritamente positiva e diferente de 1!
                 </span>
               )}
             </div>
@@ -196,6 +239,25 @@ export function OperationsGuide() {
                 <div>• <code>a / b</code> : Divisão exata real (retorna float)</div>
                 <div>• <code>a // b</code> : Divisão inteira (trunca os decimais)</div>
                 <div>• <code>a % b</code> : Resto da divisão (módulo)</div>
+              </div>
+            )}
+
+            {selectedOp.id === "porcentagem" && (
+              <div className="text-[11px] bg-slate-50 p-3 rounded-lg border border-slate-200 text-slate-600 space-y-1">
+                <div className="font-semibold text-slate-800">Dica de Porcentagem vs Módulo em Python:</div>
+                <div>• Na matemática/comércio: <code>20% de 500 = (500 * 20) / 100 = 100</code></div>
+                <div>• No Python puro: <code>500 % 20</code> calcula o <em>resto da divisão</em> (que é <code>0</code>)</div>
+                <div>• Por isso, sempre definimos a fórmula <code>(valor * taxa) / 100</code> explicitamente!</div>
+              </div>
+            )}
+
+            {selectedOp.id === "logaritmo" && (
+              <div className="text-[11px] bg-slate-50 p-3 rounded-lg border border-slate-200 text-slate-600 space-y-1">
+                <div className="font-semibold text-slate-800">Funções de Logaritmo no módulo <code>math</code>:</div>
+                <div>• <code>math.log10(x)</code> : Logaritmo decimal (base 10)</div>
+                <div>• <code>math.log(x)</code> : Logaritmo natural / neperiano (base e)</div>
+                <div>• <code>math.log(x, base)</code> : Logaritmo em qualquer base personalizada</div>
+                <div>• <code>math.log2(x)</code> : Logaritmo binário (base 2)</div>
               </div>
             )}
           </div>

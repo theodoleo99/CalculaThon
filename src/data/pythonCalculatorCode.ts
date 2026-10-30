@@ -17,8 +17,12 @@ export interface CodeSection {
 
 export const COMPLETE_PYTHON_CODE = `# ==========================================================
 # CALCULATHON - CALCULADORA EM PYTHON
-# Operações: Adição, Subtração, Multiplicação e Divisão
+# Operações: Adição, Subtração, Multiplicação, Divisão,
+#            Porcentagem e Logaritmo
 # ==========================================================
+
+import math
+
 
 def adicionar(a: float, b: float) -> float:
     """Retorna a soma de dois números."""
@@ -45,17 +49,40 @@ def dividir(a: float, b: float) -> float | str:
     return a / b
 
 
+def porcentagem(valor: float, taxa: float) -> float:
+    """
+    Calcula a porcentagem de um valor principal.
+    Fórmula: (valor * taxa) / 100.0
+    Exemplo: 20% de 500 = (500 * 20) / 100 = 100.0
+    """
+    return (valor * taxa) / 100.0
+
+
+def logaritmo(x: float, base: float = 10.0) -> float | str:
+    """
+    Calcula o logaritmo de 'x' na base informada (padrão base 10).
+    Trata matematicamente logaritmos com x <= 0 ou bases inválidas.
+    """
+    if x <= 0:
+        return "Erro: Logaritmo indefinido para números menores ou iguais a zero (x <= 0)!"
+    if base <= 0 or base == 1:
+        return "Erro: A base do logaritmo deve ser estritamente positiva e diferente de 1!"
+    return math.log(x, base)
+
+
 def exibir_menu() -> None:
     """Exibe o menu visual com as opções disponíveis."""
-    print("\\n" + "=" * 36)
-    print("           CALCULATHON              ")
-    print("=" * 36)
+    print("\\n" + "=" * 40)
+    print("               CALCULATHON              ")
+    print("=" * 40)
     print("1 - Adição (+)")
     print("2 - Subtração (-)")
     print("3 - Multiplicação (*)")
     print("4 - Divisão (/)")
-    print("5 - Sair do programa")
-    print("=" * 36)
+    print("5 - Porcentagem (%)")
+    print("6 - Logaritmo (log)")
+    print("7 - Sair do programa")
+    print("=" * 40)
 
 
 def obter_numero(mensagem: str) -> float:
@@ -77,39 +104,69 @@ def main() -> None:
     
     while True:
         exibir_menu()
-        opcao = input("Escolha uma opção (1-5): ").strip()
+        opcao = input("Escolha uma opção (1-7): ").strip()
 
-        if opcao == "5":
+        if opcao == "7":
             print("\\nObrigado por usar a calculadora! Encerrando...")
             break
 
-        if opcao not in ("1", "2", "3", "4"):
-            print("\\nOpção inválida! Escolha um valor entre 1 e 5.")
+        if opcao not in ("1", "2", "3", "4", "5", "6"):
+            print("\\nOpção inválida! Escolha um valor entre 1 e 7.")
             continue
 
         print("\\n--- Entrada de Dados ---")
-        num1 = obter_numero("Digite o primeiro número: ")
-        num2 = obter_numero("Digite o segundo número: ")
-
-        print("\\n--- Resultado ---")
         if opcao == "1":
+            num1 = obter_numero("Digite o primeiro número: ")
+            num2 = obter_numero("Digite o segundo número: ")
+            print("\\n--- Resultado ---")
             resultado = adicionar(num1, num2)
             print(f"{num1} + {num2} = {resultado}")
 
         elif opcao == "2":
+            num1 = obter_numero("Digite o primeiro número: ")
+            num2 = obter_numero("Digite o segundo número: ")
+            print("\\n--- Resultado ---")
             resultado = subtrair(num1, num2)
             print(f"{num1} - {num2} = {resultado}")
 
         elif opcao == "3":
+            num1 = obter_numero("Digite o primeiro número: ")
+            num2 = obter_numero("Digite o segundo número: ")
+            print("\\n--- Resultado ---")
             resultado = multiplicar(num1, num2)
             print(f"{num1} * {num2} = {resultado}")
 
         elif opcao == "4":
+            num1 = obter_numero("Digite o primeiro número: ")
+            num2 = obter_numero("Digite o segundo número: ")
+            print("\\n--- Resultado ---")
             resultado = dividir(num1, num2)
             if isinstance(resultado, str):
                 print(resultado)
             else:
                 print(f"{num1} / {num2} = {resultado}")
+
+        elif opcao == "5":
+            valor = obter_numero("Digite o valor principal (base): ")
+            taxa = obter_numero("Digite a porcentagem a calcular (%): ")
+            print("\\n--- Resultado ---")
+            resultado = porcentagem(valor, taxa)
+            print(f"{taxa}% de {valor} = {resultado}")
+
+        elif opcao == "6":
+            x = obter_numero("Digite o número (logaritmando > 0): ")
+            entrada_base = input("Digite a base do logaritmo (ENTER para base 10 padrão): ").strip().replace(",", ".")
+            try:
+                base = float(entrada_base) if entrada_base else 10.0
+            except ValueError:
+                print("Base inválida! Usando base 10 padrão.")
+                base = 10.0
+            print("\\n--- Resultado ---")
+            resultado = logaritmo(x, base)
+            if isinstance(resultado, str):
+                print(resultado)
+            else:
+                print(f"log de {x} na base {base} = {resultado}")
 
         input("\\nPressione ENTER para continuar...")
 
@@ -122,6 +179,7 @@ if __name__ == "__main__":
 export const BASIC_PYTHON_CODE = `# ==========================================================
 # CALCULADORA BÁSICA EM PYTHON (Versão Essencial)
 # ==========================================================
+import math
 
 # 1. Definição das funções matemáticas
 def adicionar(a, b):
@@ -138,27 +196,47 @@ def dividir(a, b):
         return "Erro: Divisão por zero!"
     return a / b
 
+def porcentagem(valor, taxa):
+    return (valor * taxa) / 100
+
+def logaritmo(x, base=10):
+    if x <= 0:
+        return "Erro: Logaritmo de x <= 0!"
+    if base <= 0 or base == 1:
+        return "Erro: Base inválida!"
+    return math.log(x, base)
+
 # 2. Apresentação das opções
 print("1 - Adição (+)")
 print("2 - Subtração (-)")
 print("3 - Multiplicação (*)")
 print("4 - Divisão (/)")
+print("5 - Porcentagem (%)")
+print("6 - Logaritmo (log)")
 
-opcao = input("Escolha a operação (1/2/3/4): ")
+opcao = input("Escolha a operação (1-6): ")
 
-# 3. Leitura dos números
-num1 = float(input("Digite o 1º número: "))
-num2 = float(input("Digite o 2º número: "))
-
-# 4. Cálculo e exibição do resultado
-if opcao == "1":
-    print(f"Resultado: {num1} + {num2} = {adicionar(num1, num2)}")
-elif opcao == "2":
-    print(f"Resultado: {num1} - {num2} = {subtrair(num1, num2)}")
-elif opcao == "3":
-    print(f"Resultado: {num1} * {num2} = {multiplicar(num1, num2)}")
-elif opcao == "4":
-    print(f"Resultado: {num1} / {num2} = {dividir(num1, num2)}")
+# 3. Leitura e execução
+if opcao in ("1", "2", "3", "4"):
+    num1 = float(input("Digite o 1º número: "))
+    num2 = float(input("Digite o 2º número: "))
+    if opcao == "1":
+        print(f"Resultado: {num1} + {num2} = {adicionar(num1, num2)}")
+    elif opcao == "2":
+        print(f"Resultado: {num1} - {num2} = {subtrair(num1, num2)}")
+    elif opcao == "3":
+        print(f"Resultado: {num1} * {num2} = {multiplicar(num1, num2)}")
+    elif opcao == "4":
+        print(f"Resultado: {num1} / {num2} = {dividir(num1, num2)}")
+elif opcao == "5":
+    valor = float(input("Digite o valor: "))
+    taxa = float(input("Digite a taxa (%): "))
+    print(f"Resultado: {taxa}% de {valor} = {porcentagem(valor, taxa)}")
+elif opcao == "6":
+    num = float(input("Digite o número (x > 0): "))
+    base_in = input("Digite a base (pressione Enter para base 10): ")
+    base = float(base_in) if base_in else 10.0
+    print(f"Resultado: log de {num} na base {base} = {logaritmo(num, base)}")
 else:
     print("Opção inválida!")
 `;
@@ -168,8 +246,8 @@ export const CODE_SECTIONS: CodeSection[] = [
     id: "funcao_adicao",
     title: "1. Função de Adição (`adicionar`)",
     badge: "Operador +",
-    lineStart: 6,
-    lineEnd: 8,
+    lineStart: 10,
+    lineEnd: 12,
     codeSnippet: `def adicionar(a: float, b: float) -> float:\n    """Retorna a soma de dois números."""\n    return a + b`,
     shortSummary: "Define a função que recebe dois números e entrega a soma deles com o operador '+'.",
     explanation: 
@@ -189,8 +267,8 @@ export const CODE_SECTIONS: CodeSection[] = [
     id: "funcao_subtracao",
     title: "2. Função de Subtração (`subtrair`)",
     badge: "Operador -",
-    lineStart: 11,
-    lineEnd: 13,
+    lineStart: 15,
+    lineEnd: 17,
     codeSnippet: `def subtrair(a: float, b: float) -> float:\n    """Retorna a diferença entre dois números."""\n    return a - b`,
     shortSummary: "Calcula a diferença entre o primeiro e o segundo número com o operador '-'.",
     explanation:
@@ -207,8 +285,8 @@ export const CODE_SECTIONS: CodeSection[] = [
     id: "funcao_multiplicacao",
     title: "3. Função de Multiplicação (`multiplicar`)",
     badge: "Operador *",
-    lineStart: 16,
-    lineEnd: 18,
+    lineStart: 20,
+    lineEnd: 22,
     codeSnippet: `def multiplicar(a: float, b: float) -> float:\n    """Retorna o produto da multiplicação de dois números."""\n    return a * b`,
     shortSummary: "Multiplica dois fatores usando o operador asterisco '*'.",
     explanation:
@@ -225,9 +303,9 @@ export const CODE_SECTIONS: CodeSection[] = [
     id: "funcao_divisao",
     title: "4. Função de Divisão e Proteção (`dividir`)",
     badge: "Operador / & ZeroDivisionError",
-    lineStart: 21,
-    lineEnd: 28,
-    codeSnippet: `def dividir(a: float, b: float) -> float | str:\n    """Retorna o quociente ou mensagem se dividir por zero."""\n    if b == 0:\n        return "Erro: Não é possível dividir por zero!"\n    return a / b`,
+    lineStart: 25,
+    lineEnd: 32,
+    codeSnippet: `def dividir(a: float, b: float) -> float | str:\n    """\n    Retorna o quociente da divisão de 'a' por 'b'.\n    Trata matematicamente a tentativa de divisão por zero.\n    """\n    if b == 0:\n        return "Erro: Não é possível dividir por zero!"\n    return a / b`,
     shortSummary: "Efetua a divisão e previne o erro crítico de divisão por zero (ZeroDivisionError).",
     explanation:
       "Na matemática, a divisão por zero é indefinida. Se tentarmos executar '10 / 0' diretamente em Python, " +
@@ -242,20 +320,60 @@ export const CODE_SECTIONS: CodeSection[] = [
     syntaxTips: "Em Python 3, a divisão comum `/` sempre gera um número do tipo 'float', mesmo quando a divisão é exata.",
   },
   {
-    id: "funcao_menu",
-    title: "5. Exibição do Menu (`exibir_menu`)",
-    badge: "Interface CLI",
-    lineStart: 31,
+    id: "funcao_porcentagem",
+    title: "5. Função de Porcentagem (`porcentagem`)",
+    badge: "Cálculo Percentual (%)",
+    lineStart: 35,
     lineEnd: 41,
-    codeSnippet: `def exibir_menu() -> None:\n    print("\\n" + "=" * 36)\n    print("       CALCULADORA EM PYTHON")\n    print("=" * 36)\n    print("1 - Adição (+)")\n    print("2 - Subtração (-)")\n    print("3 - Multiplicação (*)")\n    print("4 - Divisão (/)")\n    print("5 - Sair do programa")\n    print("=" * 36)`,
-    shortSummary: "Imprime na tela um menu organizado e amigável com as opções disponíveis.",
+    codeSnippet: `def porcentagem(valor: float, taxa: float) -> float:\n    """\n    Calcula a porcentagem de um valor principal.\n    Fórmula: (valor * taxa) / 100.0\n    Exemplo: 20% de 500 = (500 * 20) / 100 = 100.0\n    """\n    return (valor * taxa) / 100.0`,
+    shortSummary: "Calcula a fatia proporcional de um valor base a partir de uma taxa percentual (%).",
+    explanation:
+      "A porcentagem é uma razão matemática centesimal (base 100). " +
+      "Para calcular, por exemplo, 20% de 500, multiplicamos o valor base (500) pela taxa (20) e dividimos o total por 100: (500 * 20) / 100 = 100.0. " +
+      "Diferente da maioria das calculadoras tradicionais que aplicam porcentagem apenas como modificador, em Python implementamos uma função clara e previsível com tipagem float.",
+    keyPoints: [
+      "Fórmula fundamental: `(valor * taxa) / 100.0`.",
+      "Distinção crítica do operador `%`: Em Python, o símbolo `%` é o operador de 'módulo' (resto da divisão inteira). Por isso criamos a função dedicada `porcentagem()`.",
+      "Precisão com `float`: Suporta taxas decimais fracionadas (ex: 7.25% de R$ 1.500,00).",
+    ],
+    syntaxTips: "Nunca use `valor % taxa` esperando obter porcentagem em Python! No Python, `10 % 3` resulta em `1` (resto da divisão inteira). Para porcentagem, use `(valor * taxa) / 100`.",
+  },
+  {
+    id: "funcao_logaritmo",
+    title: "6. Função de Logaritmo (`logaritmo`)",
+    badge: "Módulo math.log & math.log10",
+    lineStart: 44,
+    lineEnd: 53,
+    codeSnippet: `def logaritmo(x: float, base: float = 10.0) -> float | str:\n    """\n    Calcula o logaritmo de 'x' na base informada (padrão base 10).\n    Trata matematicamente logaritmos com x <= 0 ou bases inválidas.\n    """\n    if x <= 0:\n        return "Erro: Logaritmo indefinido para números menores ou iguais a zero (x <= 0)!"\n    if base <= 0 or base == 1:\n        return "Erro: A base do logaritmo deve ser estritamente positiva e diferente de 1!"\n    return math.log(x, base)`,
+    shortSummary: "Calcula o expoente ao qual a base deve ser elevada para produzir o valor x, com proteção de domínio.",
+    explanation:
+      "O logaritmo responde à pergunta matemática: 'a qual expoente devo elevar a base b para obter x?' (exemplo: log₁₀(100) = 2, pois 10² = 100; log₂(8) = 3, pois 2³ = 8). " +
+      "Nos números reais, o logaritmo só existe para valores estritamente positivos (x > 0) e bases positivas diferentes de 1 (b > 0 e b ≠ 1). " +
+      "Utilizamos a biblioteca padrão `import math` do Python com `math.log(x, base)` e tratamos preventivamente qualquer entrada inválida.",
+    keyPoints: [
+      "`import math`: Módulo padrão nativo do Python com rotinas matemáticas de alta precisão em C.",
+      "`math.log(x, base)`: Retorna o logaritmo de x na base especificada.",
+      "Parâmetro padrão (`base: float = 10.0`): Se o usuário não informar a base, calcula automaticamente o logaritmo decimal (base 10).",
+      "Proteção de domínio (`if x <= 0`): Evita o erro nativo `ValueError: math domain error`.",
+      "Proteção da base (`if base <= 0 or base == 1`): Garante que a base atenda às regras matemáticas da função logarítmica.",
+    ],
+    syntaxTips: "Sem o argumento de base (`math.log(x)`), o Python calcula o logaritmo natural (base e de Euler ≈ 2.71828). Para base decimal direta, você também pode usar `math.log10(x)`.",
+  },
+  {
+    id: "funcao_menu",
+    title: "7. Exibição do Menu (`exibir_menu`)",
+    badge: "Interface CLI",
+    lineStart: 56,
+    lineEnd: 68,
+    codeSnippet: `def exibir_menu() -> None:\n    print("\\n" + "=" * 40)\n    print("               CALCULATHON              ")\n    print("=" * 40)\n    print("1 - Adição (+)")\n    print("2 - Subtração (-)")\n    print("3 - Multiplicação (*)")\n    print("4 - Divisão (/)")\n    print("5 - Porcentagem (%)")\n    print("6 - Logaritmo (log)")\n    print("7 - Sair do programa")\n    print("=" * 40)`,
+    shortSummary: "Imprime na tela um menu organizado e amigável com as 6 opções matemáticas e opção de saída.",
     explanation:
       "Uma boa experiência de usuário no terminal precisa de clareza visual. " +
-      "Usamos a multiplicação de strings ('=' * 36) para criar linhas divisórias elegantes sem precisar digitar dezenas de caracteres manualmente. " +
+      "Usamos a multiplicação de strings ('=' * 40) para criar linhas divisórias elegantes sem precisar digitar dezenas de caracteres manualmente. " +
       "Cada linha do menu tem um número correspondente que o usuário poderá digitar.",
     keyPoints: [
       "`print()`: Função padrão do Python para enviar texto ao terminal.",
-      "`'=' * 36`: Recurso inteligente do Python que repete o caractere '=' 36 vezes.",
+      "`'=' * 40`: Recurso inteligente do Python que repete o caractere '=' 40 vezes.",
       "`\\n`: Caractere especial que pula uma linha.",
       "Retorno `None`: A função apenas imprime na tela, não precisa retornar nenhum valor calculado.",
     ],
@@ -263,10 +381,10 @@ export const CODE_SECTIONS: CodeSection[] = [
   },
   {
     id: "obter_numero",
-    title: "6. Leitura e Validação de Números (`obter_numero`)",
+    title: "8. Leitura e Validação de Números (`obter_numero`)",
     badge: "input() + float() + try/except",
-    lineStart: 44,
-    lineEnd: 54,
+    lineStart: 71,
+    lineEnd: 81,
     codeSnippet: `def obter_numero(mensagem: str) -> float:\n    while True:\n        entrada = input(mensagem).strip().replace(",", ".")\n        try:\n            return float(entrada)\n        except ValueError:\n            print("Entrada inválida! Digite um número válido (ex: 10 ou 3.14).")`,
     shortSummary: "Garante que o usuário digite um número válido, aceitando vírgula ou ponto decimal.",
     explanation:
@@ -285,15 +403,15 @@ export const CODE_SECTIONS: CodeSection[] = [
   },
   {
     id: "loop_principal",
-    title: "7. Loop Principal e Controle de Fluxo (`main`)",
+    title: "9. Loop Principal e Controle de Fluxo (`main`)",
     badge: "while True + if/elif/else",
-    lineStart: 57,
-    lineEnd: 100,
-    codeSnippet: `def main() -> None:\n    while True:\n        exibir_menu()\n        opcao = input("Escolha uma opção (1-5): ").strip()\n        if opcao == "5":\n            break\n        # ... chamadas das funções matemáticas`,
-    shortSummary: "Controla a repetição do programa e executa a operação correspondente à opção escolhida.",
+    lineStart: 84,
+    lineEnd: 167,
+    codeSnippet: `def main() -> None:\n    while True:\n        exibir_menu()\n        opcao = input("Escolha uma opção (1-7): ").strip()\n        if opcao == "7":\n            break\n        # ... chamadas das funções matemáticas`,
+    shortSummary: "Controla a repetição do programa e executa a operação correspondente à opção escolhida (1 a 7).",
     explanation:
       "O loop 'while True' mantém a calculadora aberta após cada conta, em vez de fechar imediatamente. " +
-      "O comando 'break' interrompe o loop quando a opção '5' (Sair) é escolhida. " +
+      "O comando 'break' interrompe o loop quando a opção '7' (Sair) é escolhida. " +
       "A estrutura 'if/elif/else' avalia a escolha do usuário e chama a função apropriada com os números coletados.",
     keyPoints: [
       "`while True`: Loop infinito que só para quando encontra 'break'.",
@@ -305,10 +423,10 @@ export const CODE_SECTIONS: CodeSection[] = [
   },
   {
     id: "ponto_entrada",
-    title: "8. Ponto de Entrada Padrão (`if __name__ == '__main__':`)",
+    title: "10. Ponto de Entrada Padrão (`if __name__ == '__main__':`)",
     badge: "Boas práticas Python",
-    lineStart: 103,
-    lineEnd: 105,
+    lineStart: 170,
+    lineEnd: 172,
     codeSnippet: `if __name__ == "__main__":\n    main()`,
     shortSummary: "Garante que o script só execute a função principal se for rodado diretamente.",
     explanation:
@@ -344,7 +462,7 @@ export const OPERATIONS_LIST: OperationDetail[] = [
     pythonOperator: "+",
     example: "15 + 27 = 42",
     description: "Junta duas ou mais quantidades para obter um total.",
-    mathProperty: "Comutativa: a + b = b + a (a ordem das parcelas não altera a soma).",
+    mathProperty: "Comutativa: a + b = b + a (a ordem das parcelas não altera a soma). Elemento neutro é 0.",
     pythonNuance: "O operador '+' em números inteiros e reais realiza a soma matemática. Em listas ou strings, faz concatenação.",
     codeExample: `def adicionar(a, b):\n    return a + b\n\nprint(adicionar(15, 27)) # 42`,
   },
@@ -366,7 +484,7 @@ export const OPERATIONS_LIST: OperationDetail[] = [
     pythonOperator: "*",
     example: "8 * 7 = 56",
     description: "Operação que representa a soma repetida de um mesmo número várias vezes.",
-    mathProperty: "Comutativa: a * b = b * a (a ordem dos fatores não altera o produto).",
+    mathProperty: "Comutativa: a * b = b * a (a ordem dos fatores não altera o produto). Elemento absorvente é 0.",
     pythonNuance: "Usa o símbolo de asterisco '*'. Cuidado: '**' em Python calcula potência (ex: 2**3 = 8).",
     codeExample: `def multiplicar(a, b):\n    return a * b\n\nprint(multiplicar(8, 7)) # 56`,
   },
@@ -380,5 +498,27 @@ export const OPERATIONS_LIST: OperationDetail[] = [
     mathProperty: "Não-comutativa. Divisão por zero é estritamente indefinida na matemática.",
     pythonNuance: "Em Python 3, o operador '/' sempre retorna um número decimal ('float'). Para divisão inteira, usa-se '//'.",
     codeExample: `def dividir(a, b):\n    if b == 0:\n        return "Erro: Divisão por zero!"\n    return a / b\n\nprint(dividir(84, 4)) # 21.0`,
+  },
+  {
+    id: "porcentagem",
+    name: "Porcentagem",
+    symbol: "%",
+    pythonOperator: "(valor * taxa) / 100",
+    example: "20% de 500 = 100.0",
+    description: "Calcula uma fração proporcional sobre a base 100 (razão centesimal).",
+    mathProperty: "Linear e proporcional: p% de V = (V × p) / 100. Exemplo: 15% de 200 = 30.",
+    pythonNuance: "Em Python nativo, '%' é o operador de resto da divisão (módulo). Para cálculo de porcentagem comercial, usamos a fórmula explícita `(valor * taxa) / 100`.",
+    codeExample: `def porcentagem(valor, taxa):\n    return (valor * taxa) / 100.0\n\nprint(porcentagem(500, 20)) # 100.0`,
+  },
+  {
+    id: "logaritmo",
+    name: "Logaritmo",
+    symbol: "log",
+    pythonOperator: "math.log(x, base)",
+    example: "log₁₀(100) = 2.0",
+    description: "Determina o expoente necessário para que uma base elevada resulte no número informado (log_b(x) = y ⇔ b^y = x).",
+    mathProperty: "Definido apenas no domínio dos reais para x > 0, base > 0 e base ≠ 1. Propriedades: log(a·b) = log(a) + log(b); log(a/b) = log(a) - log(b).",
+    pythonNuance: "Requer 'import math'. O padrão `math.log(x)` usa base e (log natural). Com `math.log10(x)` ou `math.log(x, 10)`, calcula o logaritmo decimal.",
+    codeExample: `import math\n\ndef logaritmo(x, base=10):\n    if x <= 0:\n        return "Erro: x <= 0!"\n    return math.log(x, base)\n\nprint(logaritmo(100, 10)) # 2.0`,
   },
 ];

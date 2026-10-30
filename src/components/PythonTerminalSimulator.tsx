@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Terminal as TerminalIcon, Play, RotateCcw, Sparkles, Send, CornerDownLeft } from "lucide-react";
+import { Terminal as TerminalIcon, RotateCcw, Sparkles, CornerDownLeft } from "lucide-react";
 
 interface TerminalLine {
   id: string;
@@ -11,6 +11,7 @@ type Step =
   | "await_option"
   | "await_num1"
   | "await_num2"
+  | "await_log_base"
   | "await_enter_continue"
   | "terminated";
 
@@ -26,16 +27,18 @@ export function PythonTerminalSimulator() {
     { id: "1", type: "system", text: "Executando: python calculathon.py" },
     { id: "2", type: "system", text: "Bem-vindo(a) ao CalculaThon - Calculadora em Python!" },
     { id: "3", type: "system", text: "" },
-    { id: "4", type: "system", text: "====================================" },
-    { id: "5", type: "system", text: "           CALCULATHON              " },
-    { id: "6", type: "system", text: "====================================" },
+    { id: "4", type: "system", text: "========================================" },
+    { id: "5", type: "system", text: "               CALCULATHON              " },
+    { id: "6", type: "system", text: "========================================" },
     { id: "7", type: "system", text: "1 - Adição (+)" },
     { id: "8", type: "system", text: "2 - Subtração (-)" },
     { id: "9", type: "system", text: "3 - Multiplicação (*)" },
     { id: "10", type: "system", text: "4 - Divisão (/)" },
-    { id: "11", type: "system", text: "5 - Sair do programa" },
-    { id: "12", type: "system", text: "====================================" },
-    { id: "13", type: "prompt", text: "Escolha uma opção (1-5): " },
+    { id: "11", type: "system", text: "5 - Porcentagem (%)" },
+    { id: "12", type: "system", text: "6 - Logaritmo (log)" },
+    { id: "13", type: "system", text: "7 - Sair do programa" },
+    { id: "14", type: "system", text: "========================================" },
+    { id: "15", type: "prompt", text: "Escolha uma opção (1-7): " },
   ];
 
   const [lines, setLines] = useState<TerminalLine[]>(initialLines);
@@ -55,16 +58,18 @@ export function PythonTerminalSimulator() {
   const showMenuLines = () => {
     return [
       { id: Math.random().toString(), type: "system" as const, text: "" },
-      { id: Math.random().toString(), type: "system" as const, text: "====================================" },
-      { id: Math.random().toString(), type: "system" as const, text: "           CALCULATHON              " },
-      { id: Math.random().toString(), type: "system" as const, text: "====================================" },
+      { id: Math.random().toString(), type: "system" as const, text: "========================================" },
+      { id: Math.random().toString(), type: "system" as const, text: "               CALCULATHON              " },
+      { id: Math.random().toString(), type: "system" as const, text: "========================================" },
       { id: Math.random().toString(), type: "system" as const, text: "1 - Adição (+)" },
       { id: Math.random().toString(), type: "system" as const, text: "2 - Subtração (-)" },
       { id: Math.random().toString(), type: "system" as const, text: "3 - Multiplicação (*)" },
       { id: Math.random().toString(), type: "system" as const, text: "4 - Divisão (/)" },
-      { id: Math.random().toString(), type: "system" as const, text: "5 - Sair do programa" },
-      { id: Math.random().toString(), type: "system" as const, text: "====================================" },
-      { id: Math.random().toString(), type: "prompt" as const, text: "Escolha uma opção (1-5): " },
+      { id: Math.random().toString(), type: "system" as const, text: "5 - Porcentagem (%)" },
+      { id: Math.random().toString(), type: "system" as const, text: "6 - Logaritmo (log)" },
+      { id: Math.random().toString(), type: "system" as const, text: "7 - Sair do programa" },
+      { id: Math.random().toString(), type: "system" as const, text: "========================================" },
+      { id: Math.random().toString(), type: "prompt" as const, text: "Escolha uma opção (1-7): " },
     ];
   };
 
@@ -74,7 +79,7 @@ export function PythonTerminalSimulator() {
     if (step === "await_option") {
       addLine("input", `> ${trimmed}`);
 
-      if (trimmed === "5") {
+      if (trimmed === "7") {
         addLine("system", "");
         addLine("success", "Obrigado por usar a calculadora! Encerrando...");
         addLine("system", "Processo finalizado com código de saída 0.");
@@ -83,9 +88,9 @@ export function PythonTerminalSimulator() {
         return;
       }
 
-      if (!["1", "2", "3", "4"].includes(trimmed)) {
-        addLine("error", "Opção inválida! Escolha um valor entre 1 e 5.");
-        addLine("prompt", "Escolha uma opção (1-5): ");
+      if (!["1", "2", "3", "4", "5", "6"].includes(trimmed)) {
+        addLine("error", "Opção inválida! Escolha um valor entre 1 e 7.");
+        addLine("prompt", "Escolha uma opção (1-7): ");
         setCurrentInput("");
         return;
       }
@@ -93,7 +98,15 @@ export function PythonTerminalSimulator() {
       setSelectedOp(trimmed);
       addLine("system", "");
       addLine("system", "--- Entrada de Dados ---");
-      addLine("prompt", "Digite o primeiro número: ");
+
+      if (trimmed === "5") {
+        addLine("prompt", "Digite o valor principal (base): ");
+      } else if (trimmed === "6") {
+        addLine("prompt", "Digite o número (logaritmando > 0): ");
+      } else {
+        addLine("prompt", "Digite o primeiro número: ");
+      }
+
       setStep("await_num1");
       setCurrentInput("");
       return;
@@ -105,14 +118,56 @@ export function PythonTerminalSimulator() {
 
       if (isNaN(parsed)) {
         addLine("error", "Entrada inválida! Digite um número válido (ex: 10 ou 3.14).");
-        addLine("prompt", "Digite o primeiro número: ");
+        addLine("prompt", selectedOp === "5" ? "Digite o valor principal (base): " : selectedOp === "6" ? "Digite o número (logaritmando > 0): " : "Digite o primeiro número: ");
         setCurrentInput("");
         return;
       }
 
       setNum1(parsed);
-      addLine("prompt", "Digite o segundo número: ");
-      setStep("await_num2");
+
+      if (selectedOp === "5") {
+        addLine("prompt", "Digite a porcentagem a calcular (%): ");
+        setStep("await_num2");
+      } else if (selectedOp === "6") {
+        addLine("prompt", "Digite a base do logaritmo (ENTER para base 10 padrão): ");
+        setStep("await_log_base");
+      } else {
+        addLine("prompt", "Digite o segundo número: ");
+        setStep("await_num2");
+      }
+
+      setCurrentInput("");
+      return;
+    }
+
+    if (step === "await_log_base") {
+      addLine("input", `> ${trimmed}`);
+      let base = 10;
+      if (trimmed !== "") {
+        const parsedBase = parseFloat(trimmed.replace(",", "."));
+        if (isNaN(parsedBase)) {
+          addLine("error", "Base inválida! Usando base 10 padrão.");
+          base = 10;
+        } else {
+          base = parsedBase;
+        }
+      }
+
+      addLine("system", "");
+      addLine("system", "--- Resultado ---");
+
+      if (num1 <= 0) {
+        addLine("error", "Erro: Logaritmo indefinido para números menores ou iguais a zero (x <= 0)!");
+      } else if (base <= 0 || base === 1) {
+        addLine("error", "Erro: A base do logaritmo deve ser estritamente positiva e diferente de 1!");
+      } else {
+        const res = Math.log(num1) / Math.log(base);
+        const formatted = Number(res.toFixed(8));
+        addLine("success", `log de ${num1} na base ${base} = ${formatted}`);
+      }
+
+      addLine("prompt", "\nPressione ENTER para continuar...");
+      setStep("await_enter_continue");
       setCurrentInput("");
       return;
     }
@@ -123,7 +178,7 @@ export function PythonTerminalSimulator() {
 
       if (isNaN(parsed)) {
         addLine("error", "Entrada inválida! Digite um número válido (ex: 10 ou 3.14).");
-        addLine("prompt", "Digite o segundo número: ");
+        addLine("prompt", selectedOp === "5" ? "Digite a porcentagem a calcular (%): " : "Digite o segundo número: ");
         setCurrentInput("");
         return;
       }
@@ -148,6 +203,9 @@ export function PythonTerminalSimulator() {
           const res = num1 / n2;
           addLine("success", `${num1} / ${n2} = ${res}`);
         }
+      } else if (selectedOp === "5") {
+        const res = (num1 * n2) / 100.0;
+        addLine("success", `${n2}% de ${num1} = ${res}`);
       }
 
       addLine("prompt", "\nPressione ENTER para continuar...");
@@ -186,15 +244,25 @@ export function PythonTerminalSimulator() {
   const runPreset = (op: string, val1: string, val2: string) => {
     resetTerminal();
     setTimeout(() => {
+      let prompt1Text = "Digite o primeiro número: ";
+      let prompt2Text = "Digite o segundo número: ";
+      if (op === "5") {
+        prompt1Text = "Digite o valor principal (base): ";
+        prompt2Text = "Digite a porcentagem a calcular (%): ";
+      } else if (op === "6") {
+        prompt1Text = "Digite o número (logaritmando > 0): ";
+        prompt2Text = "Digite a base do logaritmo (ENTER para base 10 padrão): ";
+      }
+
       setLines([
-        ...initialLines.slice(0, 12),
-        { id: "p1", type: "prompt", text: "Escolha uma opção (1-5): " },
+        ...initialLines.slice(0, 14),
+        { id: "p1", type: "prompt", text: "Escolha uma opção (1-7): " },
         { id: "p2", type: "input", text: `> ${op}` },
         { id: "p3", type: "system", text: "" },
         { id: "p4", type: "system", text: "--- Entrada de Dados ---" },
-        { id: "p5", type: "prompt", text: "Digite o primeiro número: " },
+        { id: "p5", type: "prompt", text: prompt1Text },
         { id: "p6", type: "input", text: `> ${val1}` },
-        { id: "p7", type: "prompt", text: "Digite o segundo número: " },
+        { id: "p7", type: "prompt", text: prompt2Text },
         { id: "p8", type: "input", text: `> ${val2}` },
         { id: "p9", type: "system", text: "" },
         { id: "p10", type: "system", text: "--- Resultado ---" },
@@ -210,11 +278,23 @@ export function PythonTerminalSimulator() {
         resLine = { id: "res", type: "success", text: `${n1} - ${n2} = ${n1 - n2}` };
       } else if (op === "3") {
         resLine = { id: "res", type: "success", text: `${n1} * ${n2} = ${n1 * n2}` };
-      } else {
+      } else if (op === "4") {
         if (n2 === 0) {
           resLine = { id: "res", type: "error", text: "Erro: Não é possível dividir por zero!" };
         } else {
           resLine = { id: "res", type: "success", text: `${n1} / ${n2} = ${n1 / n2}` };
+        }
+      } else if (op === "5") {
+        resLine = { id: "res", type: "success", text: `${n2}% de ${n1} = ${(n1 * n2) / 100.0}` };
+      } else {
+        const base = isNaN(n2) || n2 === 0 ? 10 : n2;
+        if (n1 <= 0) {
+          resLine = { id: "res", type: "error", text: "Erro: Logaritmo indefinido para números menores ou iguais a zero (x <= 0)!" };
+        } else if (base <= 0 || base === 1) {
+          resLine = { id: "res", type: "error", text: "Erro: A base do logaritmo deve ser estritamente positiva e diferente de 1!" };
+        } else {
+          const res = Math.log(n1) / Math.log(base);
+          resLine = { id: "res", type: "success", text: `log de ${n1} na base ${base} = ${Number(res.toFixed(8))}` };
         }
       }
 
@@ -237,7 +317,7 @@ export function PythonTerminalSimulator() {
             Terminal Python Simulado
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Experimente a execução real do script no terminal interativo com entrada via teclado.
+            Experimente a execução real do script no terminal interativo com entrada via teclado (6 operações disponíveis).
           </p>
         </div>
 
@@ -293,7 +373,28 @@ export function PythonTerminalSimulator() {
             onClick={() => runPreset("4", "25", "0")}
             className="px-3 py-1.5 text-xs rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-800 font-medium transition-colors cursor-pointer"
           >
-            Testar Divisão por Zero (25 ÷ 0)
+            Divisão por Zero (25 ÷ 0)
+          </button>
+          <button
+            type="button"
+            onClick={() => runPreset("5", "500", "20")}
+            className="px-3 py-1.5 text-xs rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-semibold transition-colors cursor-pointer"
+          >
+            Porcentagem (20% de 500)
+          </button>
+          <button
+            type="button"
+            onClick={() => runPreset("6", "1000", "10")}
+            className="px-3 py-1.5 text-xs rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-semibold transition-colors cursor-pointer"
+          >
+            Logaritmo (log₁₀ de 1000)
+          </button>
+          <button
+            type="button"
+            onClick={() => runPreset("6", "-10", "10")}
+            className="px-3 py-1.5 text-xs rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-800 font-medium transition-colors cursor-pointer"
+          >
+            Logaritmo Inválido (log de -10)
           </button>
         </div>
       </div>
@@ -376,11 +477,19 @@ export function PythonTerminalSimulator() {
             disabled={step === "terminated"}
             placeholder={
               step === "await_option"
-                ? "Digite 1, 2, 3, 4 ou 5 e pressione Enter..."
+                ? "Digite a opção desejada (1 a 7) e pressione Enter..."
                 : step === "await_num1"
-                ? "Digite o primeiro número (ex: 20 ou 14.5)..."
+                ? selectedOp === "5"
+                  ? "Digite o valor principal (ex: 500)..."
+                  : selectedOp === "6"
+                  ? "Digite o número (logaritmando > 0, ex: 100)..."
+                  : "Digite o primeiro número (ex: 20 ou 14.5)..."
+                : step === "await_log_base"
+                ? "Digite a base do logaritmo (ex: 10 ou 2) ou Enter para base 10..."
                 : step === "await_num2"
-                ? "Digite o segundo número..."
+                ? selectedOp === "5"
+                  ? "Digite a porcentagem (%) a calcular (ex: 15)..."
+                  : "Digite o segundo número..."
                 : step === "await_enter_continue"
                 ? "Pressione Enter para voltar ao menu..."
                 : "Programa finalizado. Clique em 'Reiniciar Script'."

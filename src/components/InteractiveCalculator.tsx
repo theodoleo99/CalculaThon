@@ -5,9 +5,9 @@ import {
   Minus, 
   X as MultiplyIcon, 
   Divide as DivideIcon, 
+  Percent,
   Equal, 
   Delete, 
-  RotateCcw, 
   AlertCircle, 
   Copy, 
   Check, 
@@ -23,13 +23,13 @@ interface HistoryItem {
   result: string;
   pythonSnippet: string;
   timestamp: string;
-  operationType: "adicao" | "subtracao" | "multiplicacao" | "divisao";
+  operationType: "adicao" | "subtracao" | "multiplicacao" | "divisao" | "porcentagem" | "logaritmo";
 }
 
 export function InteractiveCalculator() {
   const [currentInput, setCurrentInput] = useState<string>("0");
   const [previousInput, setPreviousInput] = useState<string | null>(null);
-  const [operator, setOperator] = useState<"+" | "-" | "*" | "/" | null>(null);
+  const [operator, setOperator] = useState<"+" | "-" | "*" | "/" | "%" | null>(null);
   const [waitingForNewInput, setWaitingForNewInput] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [copiedSnippet, setCopiedSnippet] = useState<boolean>(false);
@@ -45,17 +45,25 @@ export function InteractiveCalculator() {
       },
       {
         id: "sample-2",
-        expression: "450 - 85",
-        result: "365",
-        pythonSnippet: "subtrair(450.0, 85.0) # 365.0",
+        expression: "20% de 500",
+        result: "100",
+        pythonSnippet: "porcentagem(500.0, 20.0) # 100.0",
         timestamp: "Agora há pouco",
-        operationType: "subtracao",
+        operationType: "porcentagem",
+      },
+      {
+        id: "sample-3",
+        expression: "log₁₀(100)",
+        result: "2",
+        pythonSnippet: "math.log10(100.0) # 2.0",
+        timestamp: "Agora há pouco",
+        operationType: "logaritmo",
       },
     ];
   });
 
   // Calculate mathematical result
-  const compute = useCallback((num1: number, num2: number, op: "+" | "-" | "*" | "/"): { result: number | null; error?: string } => {
+  const compute = useCallback((num1: number, num2: number, op: "+" | "-" | "*" | "/" | "%"): { result: number | null; error?: string } => {
     switch (op) {
       case "+":
         return { result: num1 + num2 };
@@ -71,25 +79,13 @@ export function InteractiveCalculator() {
           };
         }
         return { result: num1 / num2 };
+      case "%":
+        // num2% de num1: (num1 * num2) / 100
+        return { result: (num1 * num2) / 100 };
       default:
         return { result: num2 };
     }
   }, []);
-
-  // Format number for display
-  const formatNumber = (numStr: string) => {
-    if (numStr === "Erro" || numStr === "NaN") return numStr;
-    const parts = numStr.split(".");
-    const integerPart = parts[0];
-    const decimalPart = parts[1];
-    
-    // Format integer with dot separator for thousands if needed
-    const formattedInteger = Number(integerPart).toLocaleString("pt-BR");
-    if (decimalPart !== undefined) {
-      return `${formattedInteger},${decimalPart}`;
-    }
-    return formattedInteger;
-  };
 
   const handleDigit = useCallback((digit: string) => {
     setErrorMsg(null);
@@ -114,7 +110,7 @@ export function InteractiveCalculator() {
     }
   }, [currentInput, waitingForNewInput]);
 
-  const handleOperator = useCallback((op: "+" | "-" | "*" | "/") => {
+  const handleOperator = useCallback((op: "+" | "-" | "*" | "/" | "%") => {
     setErrorMsg(null);
     const inputValue = parseFloat(currentInput);
 
@@ -135,7 +131,6 @@ export function InteractiveCalculator() {
       }
 
       if (result !== null) {
-        // Clean float precision
         const formattedResult = Number(result.toFixed(8)).toString();
         setCurrentInput(formattedResult);
         setPreviousInput(formattedResult);
@@ -146,6 +141,34 @@ export function InteractiveCalculator() {
       setOperator(op);
     }
   }, [compute, currentInput, operator, previousInput, waitingForNewInput]);
+
+  // Logaritmo decimal direto (base 10) do número atual
+  const handleLog10 = useCallback(() => {
+    setErrorMsg(null);
+    const val = parseFloat(currentInput);
+    if (isNaN(val)) return;
+
+    if (val <= 0) {
+      setErrorMsg("ValueError: math domain error! O logaritmo é indefinido para números menores ou iguais a zero (x ≤ 0).");
+      return;
+    }
+
+    const result = Math.log10(val);
+    const cleanResult = Number(result.toFixed(8)).toString();
+
+    const newHistoryItem: HistoryItem = {
+      id: Date.now().toString(),
+      expression: `log₁₀(${val})`,
+      result: cleanResult,
+      pythonSnippet: `math.log10(${val}) # ${cleanResult}`,
+      timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+      operationType: "logaritmo",
+    };
+
+    setHistory((prev) => [newHistoryItem, ...prev.slice(0, 19)]);
+    setCurrentInput(cleanResult);
+    setWaitingForNewInput(true);
+  }, [currentInput]);
 
   const handleEqual = useCallback(() => {
     if (!operator || previousInput === null) return;
@@ -170,25 +193,26 @@ export function InteractiveCalculator() {
         "-": "subtracao",
         "*": "multiplicacao",
         "/": "divisao",
+        "%": "porcentagem",
       };
       const opSymbols: Record<string, string> = {
         "+": "+",
         "-": "-",
         "*": "×",
         "/": "÷",
+        "%": "%",
       };
-      const opFunctions: Record<string, string> = {
-        "+": "adicionar",
-        "-": "subtrair",
-        "*": "multiplicar",
-        "/": "dividir",
-      };
+
+      const expressionText = operator === "%" ? `${num2}% de ${num1}` : `${num1} ${opSymbols[operator]} ${num2}`;
+      const pythonSnippetText = operator === "%"
+        ? `porcentagem(${num1}, ${num2}) # ${cleanResult}`
+        : `${operator === "+" ? "adicionar" : operator === "-" ? "subtrair" : operator === "*" ? "multiplicar" : "dividir"}(${num1}, ${num2}) # ${cleanResult}`;
 
       const newHistoryItem: HistoryItem = {
         id: Date.now().toString(),
-        expression: `${num1} ${opSymbols[operator]} ${num2}`,
+        expression: expressionText,
         result: cleanResult,
-        pythonSnippet: `${opFunctions[operator]}(${num1}, ${num2}) # ${cleanResult}`,
+        pythonSnippet: pythonSnippetText,
         timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
         operationType: opNames[operator],
       };
@@ -257,6 +281,9 @@ export function InteractiveCalculator() {
       } else if (e.key === "/") {
         e.preventDefault();
         handleOperator("/");
+      } else if (e.key === "%") {
+        e.preventDefault();
+        handleOperator("%");
       } else if (e.key === "Enter" || e.key === "=") {
         e.preventDefault();
         handleEqual();
@@ -276,6 +303,9 @@ export function InteractiveCalculator() {
   // Python equivalent string currently being drafted
   const currentPythonEquivalent = () => {
     if (previousInput && operator) {
+      if (operator === "%") {
+        return `porcentagem(${previousInput}, ${currentInput}) # ${currentInput}% de ${previousInput}`;
+      }
       const funcName = 
         operator === "+" ? "adicionar" :
         operator === "-" ? "subtrair" :
@@ -305,7 +335,7 @@ export function InteractiveCalculator() {
                   CalculaThon
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Operações: Adição (+), Subtração (−), Multiplicação (×) e Divisão (÷)
+                  Operações: Adição (+), Subtração (−), Multiplicação (×), Divisão (÷), Porcentagem (%) e Logaritmo (log)
                 </p>
               </div>
             </div>
@@ -325,7 +355,7 @@ export function InteractiveCalculator() {
                   <>
                     <span className="text-slate-300">{previousInput}</span>{" "}
                     <span className="text-amber-400 font-bold">
-                      {operator === "+" ? "+" : operator === "-" ? "−" : operator === "*" ? "×" : "÷"}
+                      {operator === "+" ? "+" : operator === "-" ? "−" : operator === "*" ? "×" : operator === "/" ? "÷" : "%"}
                     </span>
                   </>
                 ) : (
@@ -339,6 +369,7 @@ export function InteractiveCalculator() {
                   {operator === "-" && "Operação: Subtração (−)"}
                   {operator === "*" && "Operação: Multiplicação (×)"}
                   {operator === "/" && "Operação: Divisão (÷)"}
+                  {operator === "%" && "Operação: Porcentagem (%)"}
                 </span>
               )}
             </div>
@@ -351,7 +382,7 @@ export function InteractiveCalculator() {
             </div>
           </div>
 
-          {/* Alerta de Erro Matemático / Divisão por zero */}
+          {/* Alerta de Erro Matemático / Divisão por zero / Logaritmo inválido */}
           {errorMsg && (
             <div className="mb-5 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs sm:text-sm flex items-start gap-3 animate-fade-in">
               <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
@@ -364,7 +395,7 @@ export function InteractiveCalculator() {
 
           {/* Teclado da Calculadora */}
           <div className="grid grid-cols-4 gap-2.5 sm:gap-3">
-            {/* Linha 1 */}
+            {/* Linha 1: Utilitários, Porcentagem e Logaritmo */}
             <button
               type="button"
               onClick={handleClear}
@@ -383,23 +414,24 @@ export function InteractiveCalculator() {
             </button>
             <button
               type="button"
-              onClick={handleBackspace}
-              className="py-3.5 px-2 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-slate-400 flex items-center justify-center cursor-pointer active:scale-[0.98]"
-              title="Apagar último dígito (Backspace)"
+              onClick={() => handleOperator("%")}
+              className={`py-3.5 px-2 rounded-xl text-base font-bold transition-all focus-visible:ring-2 focus-visible:ring-amber-400 flex items-center justify-center cursor-pointer active:scale-[0.98] ${
+                operator === "%" 
+                  ? "bg-amber-600 text-white shadow-sm ring-2 ring-amber-500" 
+                  : "bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/60"
+              }`}
+              title="Porcentagem (%) - ex: digite 500, clique %, digite 20 e pressione = para calcular 20% de 500"
             >
-              <Delete className="w-4 h-4" />
+              <Percent className="w-4 h-4 mr-0.5" />
+              <span>%</span>
             </button>
             <button
               type="button"
-              onClick={() => handleOperator("/")}
-              className={`py-3.5 px-2 rounded-xl text-base font-bold transition-all focus-visible:ring-2 focus-visible:ring-amber-400 flex items-center justify-center cursor-pointer active:scale-[0.98] ${
-                operator === "/" 
-                  ? "bg-amber-600 text-white shadow-sm ring-2 ring-amber-500" 
-                  : "bg-amber-100 hover:bg-amber-200 text-amber-900"
-              }`}
-              title="Divisão (/) - operador real em Python"
+              onClick={handleLog10}
+              className="py-3.5 px-2 rounded-xl text-sm font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/60 transition-all focus-visible:ring-2 focus-visible:ring-amber-400 flex items-center justify-center cursor-pointer active:scale-[0.98]"
+              title="Logaritmo decimal (log₁₀) - calcula instantaneamente o logaritmo na base 10 do número no visor"
             >
-              <DivideIcon className="w-5 h-5" />
+              log₁₀
             </button>
 
             {/* Linha 2 */}
@@ -426,15 +458,15 @@ export function InteractiveCalculator() {
             </button>
             <button
               type="button"
-              onClick={() => handleOperator("*")}
+              onClick={() => handleOperator("/")}
               className={`py-3.5 px-2 rounded-xl text-base font-bold transition-all focus-visible:ring-2 focus-visible:ring-amber-400 flex items-center justify-center cursor-pointer active:scale-[0.98] ${
-                operator === "*" 
+                operator === "/" 
                   ? "bg-amber-600 text-white shadow-sm ring-2 ring-amber-500" 
                   : "bg-amber-100 hover:bg-amber-200 text-amber-900"
               }`}
-              title="Multiplicação (*) - operador em Python"
+              title="Divisão (/) - operador real em Python"
             >
-              <MultiplyIcon className="w-5 h-5" />
+              <DivideIcon className="w-5 h-5" />
             </button>
 
             {/* Linha 3 */}
@@ -461,15 +493,15 @@ export function InteractiveCalculator() {
             </button>
             <button
               type="button"
-              onClick={() => handleOperator("-")}
+              onClick={() => handleOperator("*")}
               className={`py-3.5 px-2 rounded-xl text-base font-bold transition-all focus-visible:ring-2 focus-visible:ring-amber-400 flex items-center justify-center cursor-pointer active:scale-[0.98] ${
-                operator === "-" 
+                operator === "*" 
                   ? "bg-amber-600 text-white shadow-sm ring-2 ring-amber-500" 
                   : "bg-amber-100 hover:bg-amber-200 text-amber-900"
               }`}
-              title="Subtração (-) - operador em Python"
+              title="Multiplicação (*) - operador em Python"
             >
-              <Minus className="w-5 h-5" />
+              <MultiplyIcon className="w-5 h-5" />
             </button>
 
             {/* Linha 4 */}
@@ -496,15 +528,15 @@ export function InteractiveCalculator() {
             </button>
             <button
               type="button"
-              onClick={() => handleOperator("+")}
+              onClick={() => handleOperator("-")}
               className={`py-3.5 px-2 rounded-xl text-base font-bold transition-all focus-visible:ring-2 focus-visible:ring-amber-400 flex items-center justify-center cursor-pointer active:scale-[0.98] ${
-                operator === "+" 
+                operator === "-" 
                   ? "bg-amber-600 text-white shadow-sm ring-2 ring-amber-500" 
                   : "bg-amber-100 hover:bg-amber-200 text-amber-900"
               }`}
-              title="Adição (+) - operador em Python"
+              title="Subtração (-) - operador em Python"
             >
-              <Plus className="w-5 h-5" />
+              <Minus className="w-5 h-5" />
             </button>
 
             {/* Linha 5 */}
@@ -533,11 +565,35 @@ export function InteractiveCalculator() {
             </button>
             <button
               type="button"
+              onClick={() => handleOperator("+")}
+              className={`py-3.5 px-2 rounded-xl text-base font-bold transition-all focus-visible:ring-2 focus-visible:ring-amber-400 flex items-center justify-center cursor-pointer active:scale-[0.98] ${
+                operator === "+" 
+                  ? "bg-amber-600 text-white shadow-sm ring-2 ring-amber-500" 
+                  : "bg-amber-100 hover:bg-amber-200 text-amber-900"
+              }`}
+              title="Adição (+) - operador em Python"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+
+            {/* Linha 6: Apagar e Calcular */}
+            <button
+              type="button"
+              onClick={handleBackspace}
+              className="col-span-2 py-3.5 px-3 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-slate-400 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+              title="Apagar último dígito (Backspace)"
+            >
+              <Delete className="w-4 h-4" />
+              <span>Apagar</span>
+            </button>
+            <button
+              type="button"
               onClick={handleEqual}
-              className="py-3.5 px-2 rounded-xl text-base font-bold bg-slate-900 hover:bg-slate-800 text-white shadow transition-all focus-visible:ring-2 focus-visible:ring-slate-900 flex items-center justify-center cursor-pointer active:scale-[0.98]"
+              className="col-span-2 py-3.5 px-3 rounded-xl text-base font-bold bg-slate-900 hover:bg-slate-800 text-white shadow transition-all focus-visible:ring-2 focus-visible:ring-slate-900 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
               title="Calcular resultado (= ou Enter)"
             >
               <Equal className="w-5 h-5" />
+              <span>Calcular (=)</span>
             </button>
           </div>
 
@@ -636,17 +692,20 @@ export function InteractiveCalculator() {
         <div className="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-5 text-amber-950">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-4 h-4 text-amber-700" />
-            <h4 className="text-sm font-bold text-amber-900">Como o Python lida com números</h4>
+            <h4 className="text-sm font-bold text-amber-900">Como o Python lida com números e funções</h4>
           </div>
           <ul className="text-xs space-y-2 text-amber-900/90 leading-relaxed">
             <li>
               <strong>Inteiros (`int`) vs Decimais (`float`):</strong> Números como <code>5</code> são inteiros; números como <code>5.0</code> ou <code>3.14</code> são reais com ponto flutuante.
             </li>
             <li>
-              <strong>Divisão Real (`/`):</strong> Em Python 3, <code>4 / 2</code> resulta em <code>2.0</code> (sempre retorna <code>float</code>).
+              <strong>Divisão Real (`/`):</strong> Em Python 3, <code>4 / 2</code> resulta em <code>2.0</code> (sempre retorna <code>float</code>). Divisão por <code>0</code> gera <code>ZeroDivisionError</code> se não for tratada.
             </li>
             <li>
-              <strong>Segurança Zero:</strong> Tentar dividir por <code>0</code> levantaria um erro <code>ZeroDivisionError</code> se não colocássemos uma proteção <code>if b == 0</code>.
+              <strong>Porcentagem (`%`):</strong> Em Python puro, <code>%</code> é o operador de resto da divisão (módulo). Para porcentagem comercial criamos <code>(valor * taxa) / 100</code>.
+            </li>
+            <li>
+              <strong>Logaritmo (`math.log`):</strong> Calcula expoentes. Requer <code>import math</code> e exige estritamente <code>x &gt; 0</code> para não disparar <code>ValueError</code>.
             </li>
           </ul>
         </div>

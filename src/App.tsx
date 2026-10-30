@@ -95,7 +95,7 @@ export default function App() {
                 activeTab === "guide" ? "text-slate-900 font-semibold" : ""
               }`}
             >
-              4 Operadores
+              Operações & Guia
             </button>
           </nav>
 
@@ -128,13 +128,13 @@ export default function App() {
                 <span aria-hidden="true">·</span>
                 <span>Python 3.12+</span>
                 <span aria-hidden="true">·</span>
-                <span>Adição, Subtração, Multiplicação e Divisão</span>
+                <span>Operações Básicas, Porcentagem e Logaritmo</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight text-balance">
                 CalculaThon
               </h1>
               <p className="text-sm text-slate-600 mt-1.5 leading-relaxed max-w-2xl">
-                Calculadora simples em Python com as 4 operações básicas (+, −, ×, ÷), explicações detalhadas de cada parte do código e terminal interativo.
+                Calculadora completa em Python com as 4 operações básicas (+, −, ×, ÷), cálculo de Porcentagem (%) e Logaritmo (log), explicações didáticas de cada parte do código e terminal interativo.
               </p>
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function App() {
               }`}
             >
               <BookMarked className="w-3.5 h-3.5" />
-              <span>4 Operadores</span>
+              <span>Operações & Guia</span>
             </button>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function App() {
             <CalculaThonLogo size={24} showOrbitalRing={false} />
             <span className="font-bold text-slate-800">CalculaThon</span>
             <span aria-hidden="true">·</span>
-            <span>Calculadora em Python (Adição, Subtração, Multiplicação e Divisão)</span>
+            <span>Calculadora em Python (Adição, Subtração, Multiplicação, Divisão, Porcentagem e Logaritmo)</span>
           </div>
 
           <div className="flex items-center gap-4">
